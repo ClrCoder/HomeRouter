@@ -1,0 +1,28 @@
+root=true
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+
+#### Core EditorConfig Options ####
+
+# Indentation and spacing
+charset=utf-8
+indent_size=4
+indent_style=space
+tab_width=4
+
+# New line preferences
+# end_of_line=crlf #(Using OS Default)
+
+[*.{asax,ascx,aspx,cs,cshtml,css,htm,html,js,jsx,master,razor,skin,ts,tsx,vb,xaml,xamlx,xoml}]
+indent_style=space
+indent_size=4
+tab_width=4
+
+[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,json,jsproj,lsproj,njsproj,nuspec,proj,props,resjson,resw,resx,StyleCop,targets,tasks,vbproj,xml,xsd}]
+indent_style=space
+indent_size=2
+tab_width=2
+
+[*.{asax,ascx,aspx,cs,cshtml,css,htm,html,master,razor,skin,vb,xaml,xamlx,xoml}]
+indent_style=space
+indent_size=4
+tab_width=4
