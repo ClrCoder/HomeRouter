@@ -1,0 +1,6 @@
+[Match]
+MACAddress=00:00:00:00:00:00 # substitute with real MAC
+
+[Link]
+Name=emergency-wan
+RequiredForOnline=no

@@ -1,0 +1,10 @@
+[Match]
+Name=emergency
+
+[Network]
+DHCP=no
+# Substitute from EmergencyLan.Address
+Address=__ADDRESS__
+
+[Link]
+RequiredForOnline=no

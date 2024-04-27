@@ -1,0 +1,5 @@
+{
+  "EmergencyLan": {
+    "Address": "192.168.x.y/24" // Update with static emergency IP address
+  }
+}

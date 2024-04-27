@@ -1,0 +1,10 @@
+[Match]
+Name=emergency-wan
+
+[Network]
+DHCP=ipv4
+
+[Link]
+# At least one link should be online to not await 2 min on boot
+# In an emergency state this interface plays this role.
+#RequiredForOnline=no
