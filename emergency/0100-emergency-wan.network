@@ -1,0 +1,6 @@
+[Match]
+Name=emergency-wan
+
+[Network]
+LinkLocalAddressing=no
+DHCP=ipv4

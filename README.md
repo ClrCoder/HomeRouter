@@ -1,7 +1,6 @@
 # HomeRouter project
 ## Terminology
-- **Emergency Network** - the network for accessing the router on a static IP address via SSH
-- **Emergency WAN** - the network that has DHCP, DNS and internet for the router setup and recovery
+- **Emergency Network** - the network that is useful for setup and emergency recovery of the router. If the router has an additional NIC interface, it can be connected to some existing network with DHCP and the Internet, and accessed via SSH.
 - **WAN Network** - the NIC that is connected to ONT (Optical Network Terminal)
 - **Home Network** - the LAN that is used for home and entertainment tasks
 - **Corp Network** - the LAN used for the work from home purposes
@@ -16,4 +15,3 @@
 1) tuned
 ## Development prerequisites
 1) Visual Studio Code, remote SSH
-

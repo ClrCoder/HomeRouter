@@ -1,16 +1,16 @@
 [CmdletBinding(SupportsShouldProcess)]
 param()
 
-(. $PSScriptRoot/_scripts/utils.ps1)
+. $PSScriptRoot/_scripts/utils.ps1
 
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
 # Emulating NIC connected to the WAN network
-New-DummyLink "wan-phy" -SkipIfExist
-
-# Emulating NIC connected to the Corp Network
-New-DummyLink "corp-phy" -SkipIfExist
-
-# Emulating NIC connected to the Home Network
-New-DummyLink "home-phy" -SkipIfExist
+New-DummyLink "dummy0" -SkipIfExist
+$output = Invoke-NativeCommand { ip link show dummy0 }
+$macAddress = $output[1].Trim().Split(" ")[1]
+Copy-Item "$PSScriptRoot/config.json" "$PSScriptRoot/config.json.bak" -Force | Out-Null
+$config = Get-Content "$PSScriptRoot/config.json" | ConvertFrom-Json -AsHashtable
+$config.wan.phyMacAddress = $macAddress
+$config | ConvertTo-Json | Out-File "$PSScriptRoot/config.json" -Force

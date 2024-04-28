@@ -1,0 +1,9 @@
+[Match]
+Name=corp-phy
+
+[Network]
+LinkLocalAddressing=no
+MACVLAN=corp
+
+[Link]
+RequiredForOnline=no

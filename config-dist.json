@@ -1,5 +1,14 @@
 {
-  "EmergencyLan": {
-    "Address": "192.168.x.y/24" // Update with static emergency IP address
+  "emergency": {
+    "enabled": true,
+    "macAddress": "00:00:00:00:00:00"
+  },
+  "wan": {
+    "userName": "",
+    "password": ""
+  },
+  "corp": {
+    "phyMacAddress": "00:00:00:00:00:00",
+    "address": "10.0.0.0/24"
   }
 }

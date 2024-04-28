@@ -1,0 +1,7 @@
+[Match]
+Name=corp
+
+[Network]
+LinkLocalAddressing=no
+DHCP=no
+Address=__ADDRESS__
