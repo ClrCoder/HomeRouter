@@ -123,44 +123,60 @@ function Get-HomeRouterConfig {
 function Rename-NetInterface {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = "MAC")]
         [string]$MacAddress,
-        [string]$Name
+        [Parameter(Mandatory, ParameterSetName = "CurrentName")]
+        [string]$CurrentName,
+        [string]$Name,
+        [string]$Namespace
     )
     
-    $output = Invoke-NativeCommand { ip link show }
+    if ($MacAddress) {
+        if ($Namespace) {
+            $output = Invoke-NativeCommand { ip netns exec $Namespace ip link show }
+        }
+        else {
+            $output = Invoke-NativeCommand { ip link show }
+        }
+        
+        # --- ChatGPT owesome! ---
+        # Split the output into lines and process each line
+        $interfaceName = $null
+        foreach ($line in $output -split "`n") {
+            if ($line -match '^\d+: (\S+):') {
+                # Captures the interface name from lines like "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc..."
+                $currentInterface = $matches[1]
+            }
+            if ($line -match 'link/ether ' + $macAddress) {
+                # If the current line contains the MAC address, we've found the right interface
+                $interfaceName = $currentInterface
+                break
+            }
+        }
+        # --- ChatGPT owesome! ---
     
-    # --- ChatGPT owesome! ---
-    # Split the output into lines and process each line
-    $interfaceName = $null
-    foreach ($line in $output -split "`n") {
-        if ($line -match '^\d+: (\S+):') {
-            # Captures the interface name from lines like "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc..."
-            $currentInterface = $matches[1]
+        if (!$interfaceName) {
+            throw "Interface with MAC address $macAddress not found"
         }
-        if ($line -match 'link/ether ' + $macAddress) {
-            # If the current line contains the MAC address, we've found the right interface
-            $interfaceName = $currentInterface
-            break
+    
+        Write-Verbose "Found current interface '$interfaceName' with $MacAddress"
+        if ($interfaceName -eq $Name) {
+            # Rename is not required
+            return;
         }
     }
-    # --- ChatGPT owesome! ---
-
-    if (!$interfaceName) {
-        throw "Interface with MAC address $macAddress not found"
-    }
-
-    Write-Verbose "Found current interface '$interfaceName' with $MacAddress"
-    if ($interfaceName -eq $Name) {
-        # Rename is not required
-        return;
+    else {
+        $interfaceName = $CurrentName
     }
 
     Write-Verbose "Renaming interface with '$interfaceName' to $Name"
     if (!$WhatIfPreference) {
-        #Invoke-NativeCommand { ip link set dev $interfaceName down } | Out-Null
-        Invoke-NativeCommand { ip link set dev $interfaceName name $Name } | Out-Null
-        #Invoke-NativeCommand { ip link set dev $Name up } | Out-Null
+        if ($Namespace) {
+            Invoke-NativeCommand { ip netns exec $Namespace ip link set dev $interfaceName name $Name } | Out-Null
+        }
+        else {
+            Invoke-NativeCommand { ip link set dev $interfaceName name $Name } | Out-Null
+        }
     }
 }
 
@@ -199,5 +215,43 @@ function Update-NetInterfaceNamespace {
         else {
             Invoke-NativeCommand { ip link set dev $InterfaceName netns $targetNs } | Out-Null
         }
+    }
+}
+
+function Get-NetInterfaceIpConfig {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$InterfaceName,
+        [string]$Namespace
+    )
+    
+    if ($Namespace) {
+        $output = Invoke-NativeCommand { ip netns exec $Namespace ip addr show $InterfaceName }
+    }
+    else {
+        $output = Invoke-NativeCommand { ip addr show $InterfaceName }
+    }
+    return @{
+        addressCidr = $output[2].Trim().Split(" ")[1]
+    }
+}
+
+function Get-NetInterfaceGateway {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$InterfaceName,
+        [string]$Namespace
+    )
+
+    if ($Namespace) {
+        $output = Invoke-NativeCommand { ip netns exec $Namespace ip route show default dev $InterfaceName }
+    }
+    else {
+        $output = Invoke-NativeCommand { ip route show default dev $InterfaceName }
+    }
+    return @{
+        gatewayIp = @($output)[0].Trim().Split(' ')[2]
     }
 }
