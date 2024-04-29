@@ -11,6 +11,24 @@
   "corp": {
     "phyMacAddress": "00:00:00:00:00:00",
     "address": "10.0.0.0/24",
-    "gatewayIp": "10.0.0.254"
+    "gatewayIp": "10.0.0.254",
+    "netServicesAddress": "10.0.0.253",
+    "dnsDomainName": "corp.local",
+    "dnsServer": "1.1.1.1",
+    "subnet": "10.0.0.0",
+    "subnetMask": "255.255.255.0",
+    "dynamicRangeStart": "10.0.0.100",
+    "dynamicRangeEnd": "10.0.0.200"
+  },
+  "home": {
+    "phyMacAddress": "00:00:00:00:00:00",
+    "gatewayAddress": "192.168.1.254/24",
+    "netServicesAddress": "172.30.0.2",
+    "dnsDomainName": "home.local",
+    "dnsServer": "1.1.1.1",
+    "subnet": "192.168.1.0",
+    "subnetMask": "255.255.255.0",
+    "dynamicRangeStart": "192.168.1.100",
+    "dynamicRangeEnd": "192.168.1.200"
   }
 }

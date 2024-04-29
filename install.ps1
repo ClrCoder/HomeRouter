@@ -56,6 +56,18 @@ try {
     Replace("__USER_NAME__", $config.wan.userName) `
     | Out-File -Force "/etc/ppp/peers/pppoe-provider"
 
+    # --------- core-router ------------------
+    Write-Host "`e[92mConfiguring `e[97;1mcore-router`e[0;92m systemd services..."
+        (Get-Content "core-router/core-router.service" -Raw).
+    Replace("__PROJ_ROOT__", $PSScriptRoot) `
+    | Out-File -Force "/etc/systemd/system/core-router.service"
+    
+    Write-VerboseDryRun "Reloading and enabling systemd 'core-router' service..."
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
+        Invoke-NativeCommand { systemctl enable core-router 2>&1 } | Out-Null
+    }
+
     # --------- corp-net-services ------------------
     Write-Host "`e[92mConfiguring `e[97;1mcorp-net-services`e[0;92m systemd services..."
     (Get-Content "corp/net-services/corp-net-services.service" -Raw).
@@ -66,6 +78,18 @@ try {
     if (!$WhatIfPreference) {
         Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
         Invoke-NativeCommand { systemctl enable corp-net-services 2>&1 } | Out-Null
+    }
+
+    # --------- home-net-services ------------------
+    Write-Host "`e[92mConfiguring `e[97;1mhome-net-services`e[0;92m systemd services..."
+        (Get-Content "home/net-services/home-net-services.service" -Raw).
+    Replace("__PROJ_ROOT__", $PSScriptRoot) `
+    | Out-File -Force "/etc/systemd/system/home-net-services.service"
+    
+    Write-VerboseDryRun "Reloading and enabling systemd 'home-net-services' service..."
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
+        Invoke-NativeCommand { systemctl enable home-net-services 2>&1 } | Out-Null
     }
 
 }

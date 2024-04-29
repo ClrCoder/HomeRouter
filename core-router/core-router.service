@@ -1,0 +1,16 @@
+[Unit]
+Description='core-router' services, routes all subnets.
+After=systemd-networkd.service
+Requires=systemd-networkd.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/pwsh __PROJ_ROOT__/emulate-links.ps1 stop -Verbose
+ExecStartPre=-/usr/bin/pwsh __PROJ_ROOT__/core-router/service.ps1 stop -UseEmergencyWan -Verbose
+ExecStart=/usr/bin/pwsh __PROJ_ROOT__/core-router/service.ps1 start -UseEmergencyWan -Verbose
+
+ExecStop=/usr/bin/pwsh __PROJ_ROOT__/core-router/service.ps1 stop -UseEmergencyWan -Verbose
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
