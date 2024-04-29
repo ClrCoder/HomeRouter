@@ -47,14 +47,27 @@ try {
     Replace("__PASSWORD__", $config.wan.password) `
     | Out-File -Force "/etc/ppp/chap-secrets"
     Write-VerboseDryRun "Setting permissions for /etc/ppp/chap-secrets"
-    if (!$WhatIfPreference){
-        Invoke-NativeCommand { chmod 600 /etc/ppp/chap-secrets } | Out-Null
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { chmod 600 /etc/ppp/chap-secrets 2>&1 } | Out-Null
     }
 
     New-Item -ItemType Directory "/etc/ppp/peers" -Force | Out-Null
     (Get-Content "core-router/wan-pppoe/pppoe-provider" -Raw).
     Replace("__USER_NAME__", $config.wan.userName) `
     | Out-File -Force "/etc/ppp/peers/pppoe-provider"
+
+    # --------- corp-net-services ------------------
+    Write-Host "`e[92mConfiguring `e[97;1mcorp-net-services`e[0;92m systemd services..."
+    (Get-Content "corp/net-services/corp-net-services.service" -Raw).
+    Replace("__PROJ_ROOT__", $PSScriptRoot) `
+    | Out-File -Force "/etc/systemd/system/corp-net-services.service"
+
+    Write-VerboseDryRun "Reloading and enabling systemd 'corp-net-services' service..."
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
+        Invoke-NativeCommand { systemctl enable corp-net-services 2>&1 } | Out-Null
+    }
+
 }
 catch {
     Pop-Location | Out-Null

@@ -1,0 +1,15 @@
+[Unit]
+Description='corp' subnet base network services.
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/pwsh __PROJ_ROOT__/corp/net-services/service.ps1 stop -Verbose
+ExecStart=/usr/bin/pwsh __PROJ_ROOT__/corp/net-services/service.ps1 start -Verbose
+
+ExecStop=/usr/bin/pwsh __PROJ_ROOT__/corp/net-services/service.ps1 stop -Verbose
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
