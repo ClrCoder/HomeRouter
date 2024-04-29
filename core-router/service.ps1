@@ -18,7 +18,6 @@ $config = Get-HomeRouterConfig
 # The core router namespace name
 $ns = "core-router"
 
-# Creating namespace
 if ($Operation -in @("stop", "restart")) {
 
     $ErrorActionPreference = "Ignore"
@@ -62,7 +61,8 @@ if ($Operation -in @("start", "restart")) {
         # TODO: Start pon in the namespace
     }
 
-    Write-Host "`e[92mConfiguring `e[97;1mcorp-r`e[0;92m core-router interface, gatewayIp=`e[97;1m$($config.corp.gatewayIp)`e[0;92m ..."
+    # ----------- corp network base ----------------
+    Write-Host "`e[92mConfiguring `e[97;1mcorp`e[0;92m core-router interface, gatewayIp=`e[97;1m$($config.corp.gatewayIp)`e[0;92m ..."
     New-NetMacVLanDevice -Name "corp-r" -Parent "corp-phy"
     Update-NetInterfaceNamespace "corp-r" -TargetNamespace $ns
     Rename-NetInterface -Namespace $ns -CurrentName "corp-r" -Name "corp"
@@ -76,5 +76,18 @@ if ($Operation -in @("start", "restart")) {
     Write-VerboseDryRun "Configuring default gateway for the router, ip=$($config.corp.gatewayIp), interface=corp"
     if (!$WhatIfPreference) {
         Invoke-NativeCommand { ip route add default via $config.corp.gatewayIp dev corp 2>&1 } | Out-Null
+    }
+
+    # ----------- home network base ----------------
+    Write-Host "`e[92mConfiguring `e[97;1mhome`e[0;92m core-router interface, gatewayIp=`e[97;1m$($config.home.gatewayAddress)`e[0;92m ..."
+    Rename-NetInterface -MacAddress $config.home.phyMacAddress -Name "home-phy"
+    New-NetMacVLanDevice -Name "home-r" -Parent "home-phy"
+    Update-NetInterfaceNamespace "home-r" -TargetNamespace $ns
+    Rename-NetInterface -Namespace $ns -CurrentName "home-r" -Name "home"
+    $homeGatewayIpCidr = $config.home.gatewayAddress
+    Write-VerboseDryRun "Configuring address=$homeGatewayIpCidr for the interface 'home', namespace=$ns"
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { ip netns exec $ns ip link set home up 2>&1 } | Out-Null
+        Invoke-NativeCommand { ip netns exec $ns ip addr add $homeGatewayIpCidr dev home 2>&1 } | Out-Null
     }
 }
