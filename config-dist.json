@@ -5,10 +5,12 @@
   },
   "wan": {
     "userName": "",
-    "password": ""
+    "password": "",
+    "phyMacAddress": "00:00:00:00:00:00"
   },
   "corp": {
     "phyMacAddress": "00:00:00:00:00:00",
-    "address": "10.0.0.0/24"
+    "address": "10.0.0.0/24",
+    "gatewayIp": "10.0.0.254"
   }
 }

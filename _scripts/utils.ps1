@@ -169,7 +169,12 @@ function Rename-NetInterface {
         $interfaceName = $CurrentName
     }
 
-    Write-Verbose "Renaming interface with '$interfaceName' to $Name"
+    $nsDisplay = $Namespace
+    if (!$Namespace) {
+        $nsDisplay = 'default'
+    }
+    
+    Write-Verbose "Renaming interface with '$interfaceName' to $Name, namespace: $nsDisplay"
     if (!$WhatIfPreference) {
         if ($Namespace) {
             Invoke-NativeCommand { ip netns exec $Namespace ip link set dev $interfaceName name $Name } | Out-Null
@@ -253,5 +258,31 @@ function Get-NetInterfaceGateway {
     }
     return @{
         gatewayIp = @($output)[0].Trim().Split(' ')[2]
+    }
+}
+
+function New-NetMacVLanDevice {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        [Parameter(Mandatory)]
+        [string]$Parent,
+        [string]$Namespace
+    )
+ 
+    $nsDisplay = $Namespace
+    if (!$Namespace) {
+        $nsDisplay = 'default'
+    }
+
+    Write-VerboseDryRun "Creating macvlan device '$Name' with parent '$Parent', namespace='$nsDisplay'"
+    if (!$WhatIfPreference) {
+        if ($Namespace) {
+            Invoke-NativeCommand { ip netns exec $Namespace ip link add $Name link $Parent type macvlan mode bridge } | Out-Null
+        }
+        else {
+            Invoke-NativeCommand { ip link add $Name link $Parent type macvlan mode bridge } | Out-Null
+        }
     }
 }
