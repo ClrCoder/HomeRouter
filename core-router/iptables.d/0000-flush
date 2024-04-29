@@ -1,0 +1,3 @@
+#!/bin/bash
+
+iptables-restore $(dirname "$0")/base.rules

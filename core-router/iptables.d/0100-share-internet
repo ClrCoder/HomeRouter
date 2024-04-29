@@ -1,0 +1,3 @@
+#!/bin/bash
+
+iptables -t nat -A POSTROUTING ! -s 0.0.0.0 -o ppp0 -j MASQUERADE

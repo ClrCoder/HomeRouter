@@ -22,6 +22,13 @@ if ($Operation -in @("stop", "restart")) {
 
     $ErrorActionPreference = "Ignore"
 
+    if (!$UseEmergencyWan) {
+        Write-VerboseDryRun "Stoppiong pppo-provider"
+        if (!$WhatIfPreference) {
+            Invoke-NativeCommand { ip netns exec $ns poff pppoe-provider debug 2>&1 } | Out-Null
+        }
+    }
+
     Remove-NetNamespace $ns
     
     Write-VerboseDryRun "Removing default gateway for the router, ip=$($config.corp.gatewayIp), interface=corp"
@@ -35,9 +42,6 @@ if ($Operation -in @("stop", "restart")) {
             Start-Sleep -Seconds 1
             Invoke-NativeCommand { networkctl reconfigure emergency-wan 2>&1 } | Out-Null
         }
-    }
-    else {
-        # TODO:
     }
 }
 
@@ -58,7 +62,19 @@ if ($Operation -in @("start", "restart")) {
         }
     }
     else {
-        # TODO: Start pon in the namespace
+
+        Rename-NetInterface -MacAddress $config.wan.phyMacAddress -Name "wan-phy"
+        Update-NetInterfaceNamespace -InterfaceName "wan-phy" -TargetNamespace $ns
+
+        Write-VerboseDryRun "Starting pppo-provider"
+        if (!$WhatIfPreference) {
+            Invoke-NativeCommand { ip netns exec $ns pon pppoe-provider debug 2>&1 } | Out-Null
+        }
+    }
+
+    Write-VerboseDryRun "Applying iptable rules"
+    if (!$WhatIfPreference) {
+        & "$PSScriptRoot/apply-iptables.ps1" -NoAutoRollback
     }
 
     # ----------- corp network base ----------------
