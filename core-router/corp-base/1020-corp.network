@@ -5,3 +5,5 @@ Name=corp
 LinkLocalAddressing=no
 DHCP=no
 Address=__ADDRESS__
+DNS=__DNS_SERVERS__
+Domains=corp.local

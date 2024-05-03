@@ -37,7 +37,8 @@ try {
     Copy-Item "core-router/corp-base/1010-corp.netdev" -Destination "/etc/systemd/network/" -Force
 
     (Get-Content "core-router/corp-base/1020-corp.network" -Raw).
-    Replace("__ADDRESS__", $config.corp.address) `
+    Replace("__ADDRESS__", $config.corp.address).
+    Replace("__DNS_SERVERS__", $config.corp.dnsServer) `
     | Out-File -Force "/etc/systemd/network/1020-corp.network"
 
     # --------- Wan interface ------------------
@@ -66,6 +67,18 @@ try {
     if (!$WhatIfPreference) {
         Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
         Invoke-NativeCommand { systemctl enable core-router 2>&1 } | Out-Null
+    }
+
+    # --------- core-router ------------------
+    Write-Host "`e[92mConfiguring `e[97;1mwan-pppoe`e[0;92m systemd services..."
+        (Get-Content "core-router/wan-pppoe/wan-pppoe.service" -Raw).
+    Replace("__PROJ_ROOT__", $PSScriptRoot) `
+    | Out-File -Force "/etc/systemd/system/wan-pppoe.service"
+    
+    Write-VerboseDryRun "Reloading and enabling systemd 'wan-pppoe' service..."
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
+        Invoke-NativeCommand { systemctl enable wan-pppoe 2>&1 } | Out-Null
     }
 
     # --------- corp-net-services ------------------

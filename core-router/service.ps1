@@ -62,14 +62,24 @@ if ($Operation -in @("start", "restart")) {
         }
     }
     else {
-
+        # Setting up wan-phy interface in the core-router namespace
         Rename-NetInterface -MacAddress $config.wan.phyMacAddress -Name "wan-phy"
         Update-NetInterfaceNamespace -InterfaceName "wan-phy" -TargetNamespace $ns
-
-        Write-VerboseDryRun "Starting pppo-provider"
+        
+        Write-VerboseDryRun "Set whan-phy interface status up"
         if (!$WhatIfPreference) {
-            Invoke-NativeCommand { ip netns exec $ns pon pppoe-provider debug 2>&1 } | Out-Null
+            Invoke-NativeCommand { ip netns exec $ns ip link set wan-phy up 2>&1 } | Out-Null
         }
+
+        Write-VerboseDryRun "Setting mtu 1508 for the wah-phy adapter"
+        if (!$WhatIfPreference) {
+            Invoke-NativeCommand { ip netns exec $ns ip link set mtu 1508 dev wan-phy 2>&1 } | Out-Null
+        }
+    }
+
+    Write-VerboseDryRun "Enabling IPv4 forwarding in the core-router namespace"
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { ip netns exec $ns sysctl -w net.ipv4.ip_forward=1 2>&1 } | Out-Null
     }
 
     Write-VerboseDryRun "Applying iptable rules"
@@ -91,12 +101,21 @@ if ($Operation -in @("start", "restart")) {
 
     Write-VerboseDryRun "Configuring default gateway for the router, ip=$($config.corp.gatewayIp), interface=corp"
     if (!$WhatIfPreference) {
-        Invoke-NativeCommand { ip route add default via $config.corp.gatewayIp dev corp 2>&1 } | Out-Null
+        for ($i = 0; $i -lt 20; $i++) {
+            $errorCode = $null
+            Invoke-NativeCommand { ip route add default via $config.corp.gatewayIp dev corp 2>&1 } -ErrorCode ([ref]$errorCode) | Out-Null
+            if ($errorCode -eq 0) {
+                break
+            }
+            # Some clash happening with the systemd-networkd ip address setup for the host network
+            Start-Sleep -Milliseconds 200
+        }
     }
 
     # ----------- home network base ----------------
     Write-Host "`e[92mConfiguring `e[97;1mhome`e[0;92m core-router interface, gatewayIp=`e[97;1m$($config.home.gatewayAddress)`e[0;92m ..."
     Rename-NetInterface -MacAddress $config.home.phyMacAddress -Name "home-phy"
+    Invoke-NativeCommand { ip link set dev home-phy up 2>&1 } | Out-Null
     New-NetMacVLanDevice -Name "home-r" -Parent "home-phy"
     Update-NetInterfaceNamespace "home-r" -TargetNamespace $ns
     Rename-NetInterface -Namespace $ns -CurrentName "home-r" -Name "home"

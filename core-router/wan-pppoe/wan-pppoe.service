@@ -1,0 +1,18 @@
+[Unit]
+Description='wan-pppoe' services.
+After=docker.service core-router.service
+Requires=docker.service core-router.service
+
+[Service]
+Type=simple
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/pwsh __PROJ_ROOT__/core-router/wan-pppoe/service.ps1 stop -Verbose
+ExecStart=/usr/bin/pwsh __PROJ_ROOT__/core-router/wan-pppoe/service.ps1 start -Verbose
+Restart=always
+RestartSec=3
+
+ExecStop=/usr/bin/pwsh __PROJ_ROOT__/core-router/wan-pppoe/service.ps1 stop -Verbose
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

@@ -1,4 +1,4 @@
-[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding()]
 param(
     [ValidateSet('start', 'stop', 'restart')]
     [Parameter(Mandatory)]
@@ -45,7 +45,7 @@ if ($Operation -in @("start", "restart")) {
             corp-net-services 2>&1
     }
     
-    Write-VerboseDryRun "Createing network namespace for the $containerName"
+    Write-Verbose "Createing network namespace for the $containerName"
     $containerPid = Invoke-NativeCommand { docker inspect -f '{{.State.Pid}}' $containerId 2>&1 }
 
     $ns = $containerName
@@ -58,10 +58,18 @@ if ($Operation -in @("start", "restart")) {
     Update-NetInterfaceNamespace "corp-n" -TargetNamespace $ns
     Rename-NetInterface -Namespace $ns -CurrentName "corp-n" -Name "corp"
     $netServicesAddressIpCidr = "$($config.corp.netServicesAddress)/$($config.corp.address.split("/")[1])"
-    Write-VerboseDryRun "Configuring address=$netServicesAddressIpCidr for the interface 'corp', namespace=$ns"
+    Write-Verbose "Configuring address=$netServicesAddressIpCidr for the interface 'corp', namespace=$ns"
     Invoke-NativeCommand { ip netns exec $ns ip link set corp up 2>&1 } | Out-Null
     Invoke-NativeCommand { ip netns exec $ns ip addr add $netServicesAddressIpCidr dev corp 2>&1 } | Out-Null
-    
-    Write-VerboseDryRun "Starting DHCP server service in the $containerName"
-    Invoke-NativeCommand { docker exec -i $containerName systemctl start isc-dhcp-server 2>&1 } | Out-Null
+
+    Write-Verbose "Starting DHCP server service in the $containerName"
+    for ($i = 0; $i -lt 20; $i++) {
+        $errorCode = $null
+        Invoke-NativeCommand { docker exec $containerName systemctl start isc-dhcp-server 2>&1 } -ErrorCode ([ref]$errorCode) | Out-Null
+        if ($errorCode -eq 0) {
+            break
+        }
+        # Awaiting the systemd boot inside the container
+        Start-Sleep -Milliseconds 200
+    }
 }

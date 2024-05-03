@@ -3,8 +3,13 @@ param (
     [switch]$NoAutoRollback
 )
 
+. $PSScriptRoot/../_scripts/utils.ps1
+
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
+
+$config = Get-HomeRouterConfig
+$env:PPP_STATIC_IP = $config.wan.pppStaticIp
 
 # Saving ip-tables state
 $ipTablesBackupFile = [System.IO.Path]::GetTempFileName()

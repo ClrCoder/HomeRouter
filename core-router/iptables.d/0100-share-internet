@@ -1,3 +1,7 @@
 #!/bin/bash
 
-iptables -t nat -A POSTROUTING ! -s 0.0.0.0 -o ppp0 -j MASQUERADE
+# Standard way
+#iptables -t nat -A POSTROUTING ! -s $PPP_STATIC_IP -o ppp0 -j MASQUERADE
+
+# This should be slightly faster in theory
+iptables -t nat -A POSTROUTING -o ppp0 -j SNAT --to-source $PPP_STATIC_IP
