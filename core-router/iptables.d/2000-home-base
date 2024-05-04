@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Allow access internet from the home network
+sudo iptables -t filter -A FORWARD -i home -o ppp0 -j ACCEPT
+sudo iptables -t filter -A FORWARD -i ppp0 -o home -j ACCEPT

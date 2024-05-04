@@ -114,8 +114,8 @@ function Remove-NetNamespace {
 
 function Get-HomeRouterConfig {
     if (!$script:HomeRouterConfig) {
-        $script:HomeRouterConfig = Get-Content "$PSScriptRoot/../config.json" -Raw | ConvertFrom-Json
-        Write-Verbose ("Using Config:`n" + ($script:HomeRouterConfig | ConvertTo-Json))
+        $script:HomeRouterConfig = Get-Content "$PSScriptRoot/../config.json" -Raw | ConvertFrom-Json -AsHashtable -Depth 10
+        Write-Verbose ("Using Config:`n" + ($script:HomeRouterConfig | ConvertTo-Json -Depth 10 ))
     }
     return $script:HomeRouterConfig
 }

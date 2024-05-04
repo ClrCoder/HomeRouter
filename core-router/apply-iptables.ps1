@@ -10,7 +10,8 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 $config = Get-HomeRouterConfig
 $env:PPP_STATIC_IP = $config.wan.pppStaticIp
-
+$env:CORP_CIDR = $config.corp.subnetCidr
+$env:CORP_GATEWAY_IP = $config.corp.gatewayIp
 # Saving ip-tables state
 $ipTablesBackupFile = [System.IO.Path]::GetTempFileName()
 

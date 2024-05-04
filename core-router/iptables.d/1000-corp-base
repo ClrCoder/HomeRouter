@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Allow to access internet from the corp network
+sudo iptables -t filter -A FORWARD -i corp -o ppp0 -j ACCEPT
+sudo iptables -t filter -A FORWARD -i ppp0 -o corp -j ACCEPT
+
+# Allow kill-switch mode for the tunnel peers
+sudo iptables -t filter -A FORWARD -i corp-tunnel -o ppp0 -j ACCEPT
+sudo iptables -t filter -A FORWARD -i ppp0 -o corp-tunnel -j ACCEPT
+
+# Allow bidirectional access between corp and corp-tunnel peers
+sudo iptables -t filter -A FORWARD -i corp-tunnel -o corp -j ACCEPT
+sudo iptables -t filter -A FORWARD -i corp -o corp-tunnel -j ACCEPT
+
+# Allow access to home with the nat transformation
+iptables -t filter -A FORWARD -i corp -o home -j ACCEPT
+iptables -t nat -A POSTROUTING -s $CORP_CIDR -o home -j SNAT --to-source $CORP_GATEWAY_IP
+iptables -t filter -A FORWARD -i home -o corp -m state --state RELATED,ESTABLISHED -j ACCEPT

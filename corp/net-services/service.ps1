@@ -23,15 +23,31 @@ if ($Operation -in @("stop", "restart")) {
 }
 
 if ($Operation -in @("start", "restart")) {
-    
+
+    $fixedAddresses = ""
+    $fixedAddressTemplate = @'
+host __NAME__ {
+  hardware ethernet __MAC__;
+  fixed-address __IP__;
+}
+
+'@
+    foreach ($addr in $config.corp.fixedDhcpAddresses) {
+        $fixedAddresses += $fixedAddressTemplate.
+            Replace("__NAME__", $addr.deviceName).
+            Replace("__MAC__", $addr.mac).
+            Replace("__IP__", $addr.address)
+    }
+
     (Get-Content "$PSScriptRoot/dhcpd.conf.dist" -Raw).
-    Replace("__DOMAIN_NAME__", $config.corp.dnsDomainName). `
-        Replace("__DNS_SERVER__", $config.corp.dnsServer). `
-        Replace("__SUBNET__", $config.corp.subnet). `
-        Replace("__NETMASK__", $config.corp.subnetMask). `
-        Replace("__GATEWAY_IP__", $config.corp.gatewayIp). `
-        Replace("__DYNAMIC_RANGE_START__", $config.corp.dynamicRangeStart). `
-        Replace("__DYNAMIC_RANGE_END__", $config.corp.dynamicRangeEnd) `
+    Replace("__DOMAIN_NAME__", $config.corp.dnsDomainName).
+    Replace("__DNS_SERVER__", $config.corp.dnsServer).
+    Replace("__SUBNET__", $config.corp.subnet).
+    Replace("__NETMASK__", $config.corp.subnetMask).
+    Replace("__GATEWAY_IP__", $config.corp.gatewayIp).
+    Replace("__DYNAMIC_RANGE_START__", $config.corp.dynamicRangeStart).
+    Replace("__DYNAMIC_RANGE_END__", $config.corp.dynamicRangeEnd).
+    Replace("__FIXED_ADDRESSES__", $fixedAddresses) `
     | Out-File -Force "$PSScriptRoot/dhcpd.conf"
 
     Write-Host "`e[92mStarting `e[97;1m$containerName`e[0;92m container ..."

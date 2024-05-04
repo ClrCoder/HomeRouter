@@ -84,6 +84,8 @@ authoritative;
 #  fixed-address fantasia.example.com;
 #}
 
+__FIXED_ADDRESSES__
+
 # You can declare a class of clients and then do address allocation
 # based on that.   The example below shows a case where all clients
 # in a certain class get addresses on the 10.17.224/24 subnet, and all

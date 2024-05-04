@@ -17,9 +17,17 @@
     "dnsDomainName": "corp.local",
     "dnsServer": "1.1.1.1",
     "subnet": "10.0.0.0",
+    "subnetCidr": "10.0.0.0/24",
     "subnetMask": "255.255.255.0",
     "dynamicRangeStart": "10.0.0.100",
-    "dynamicRangeEnd": "10.0.0.200"
+    "dynamicRangeEnd": "10.0.0.200",
+    "fixedDhcpAddresses":[
+      {
+        "deviceName": "Dev1",
+        "mac": "00:00:00:00:00:00",
+        "address": "10.0.0.5"
+      }
+    ]
   },
   "home": {
     "phyMacAddress": "00:00:00:00:00:00",
