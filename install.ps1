@@ -69,7 +69,7 @@ try {
         Invoke-NativeCommand { systemctl enable core-router 2>&1 } | Out-Null
     }
 
-    # --------- core-router ------------------
+    # --------- wan-pppoe ------------------
     Write-Host "`e[92mConfiguring `e[97;1mwan-pppoe`e[0;92m systemd services..."
         (Get-Content "core-router/wan-pppoe/wan-pppoe.service" -Raw).
     Replace("__PROJ_ROOT__", $PSScriptRoot) `
@@ -79,6 +79,18 @@ try {
     if (!$WhatIfPreference) {
         Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
         Invoke-NativeCommand { systemctl enable wan-pppoe 2>&1 } | Out-Null
+    }
+
+    # --------- corp-tunnel ------------------
+    Write-Host "`e[92mConfiguring `e[97;1mcorp-tunnel`e[0;92m systemd services..."
+    (Get-Content "core-router/corp-tunnel/corp-tunnel.service" -Raw).
+    Replace("__PROJ_ROOT__", $PSScriptRoot) `
+    | Out-File -Force "/etc/systemd/system/corp-tunnel.service"
+    
+    Write-VerboseDryRun "Reloading and enabling systemd 'corp-tunnel' service..."
+    if (!$WhatIfPreference) {
+        Invoke-NativeCommand { systemctl daemon-reload 2>&1 } | Out-Null
+        Invoke-NativeCommand { systemctl enable corp-tunnel 2>&1 } | Out-Null
     }
 
     # --------- corp-net-services ------------------

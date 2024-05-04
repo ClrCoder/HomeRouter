@@ -1,0 +1,7 @@
+[Interface]
+PrivateKey = xxxx
+ListenPort = 12345
+
+[Peer]
+PublicKey = xxxx
+AllowedIPs = 0.0.0.0/32

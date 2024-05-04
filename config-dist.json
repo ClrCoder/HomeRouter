@@ -6,7 +6,8 @@
   "wan": {
     "userName": "",
     "password": "",
-    "phyMacAddress": "00:00:00:00:00:00"
+    "phyMacAddress": "00:00:00:00:00:00",
+    "pppStaticIp": "0.0.0.0"
   },
   "corp": {
     "phyMacAddress": "00:00:00:00:00:00",
