@@ -1,3 +1,5 @@
+Write-Host "Building corp/net-services docker image..." -ForegroundColor Green
+
 Push-Location $PSScriptRoot
 try {
     $env:DOCKER_BUILTKIT=1
